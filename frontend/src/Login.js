@@ -1,0 +1,76 @@
+// src/Login.js
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const Login = ({ setToken }) => {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const url = isRegistering
+      ? 'http://localhost:8000/api/register/' // endpoint para registro
+      : 'http://localhost:8000/api/login/';   // endpoint para login
+
+    try {
+      const response = await axios.post(url, {
+        username,
+        password
+      });
+
+      if (isRegistering) {
+        setMessage('✅ Registro exitoso. Ahora puedes iniciar sesión.');
+        setIsRegistering(false);
+      } else {
+        setMessage('✅ Inicio de sesión exitoso.');
+        setToken(response.data.access); // Guarda el token en App.js
+        localStorage.setItem('token', response.data.access); // opcional, para persistir
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage('❌ Hubo un error. Verifica tus datos.');
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <h1 className="cecyflix-logo">CECYFLIX</h1>
+      <h2>{isRegistering ? 'Crear cuenta' : 'Iniciar sesión'}</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Usuario"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">
+          {isRegistering ? 'Registrarse' : 'Ingresar'}
+        </button>
+      </form>
+
+      {message && <p className="message">{message}</p>}
+
+      <p>
+        {isRegistering ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}{' '}
+        <span
+          onClick={() => setIsRegistering(!isRegistering)}
+          style={{ color: '#e50914', cursor: 'pointer' }}
+        >
+          {isRegistering ? 'Inicia sesión' : 'Regístrate'}
+        </span>
+      </p>
+    </div>
+  );
+};
+
+export default Login;
